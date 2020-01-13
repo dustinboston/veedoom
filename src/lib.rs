@@ -1,10 +1,19 @@
+#[macro_use]
+extern crate serde_derive;
+
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
+use wasm_bindgen::prelude::*;
+use web_sys::DocumentFragment;
 
 pub mod myers;
 pub use myers::shortest_edit;
 
-// TODO: The Diffler
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
 
 #[derive(Debug)]
 pub enum FieldChanged {
@@ -21,7 +30,7 @@ pub enum ChangeType {
     Equal,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct VeeDoom {
     pub key: String,
     pub tag: String,
@@ -84,8 +93,21 @@ impl VeeDoom {
         }
     }
 
-    pub fn notify(&self, field: FieldChanged, change_type: ChangeType) {
-        println!("[notify] {:?} {:?}", field, change_type);
+    pub fn notify(&self, field_changed: FieldChanged, change_type: ChangeType) {
+        let window = web_sys::window().expect("no global window exists");
+        let document = window.document().expect("should have a document on window");
+
+        match field_changed {
+            FieldChanged::Tag => {
+                log("TODO: Remove DOM node and recreate");
+            }
+            FieldChanged::Props => {
+                log("TODO: Update all attribtues on DOM node");
+            }
+            FieldChanged::Children => {
+                log("Update children for THIS node");
+            }
+        }
     }
 
     pub fn log(&self, msg: String) {
@@ -110,6 +132,7 @@ impl PartialEq for VeeDoom {
     }
 }
 
+// This is basically create_element, but for Rust tests
 pub fn n(tag: &str, props: Vec<(&str, &str)>, children: Vec<Box<VeeDoom>>) -> Box<VeeDoom> {
     let mut prop_map = HashMap::new();
     for pair in props.iter() {
@@ -133,4 +156,106 @@ pub fn n(tag: &str, props: Vec<(&str, &str)>, children: Vec<Box<VeeDoom>>) -> Bo
         props: prop_map,
         children,
     })
+}
+
+// Provides a JSX compatible interface for creating nodes
+#[wasm_bindgen]
+pub fn create_element(tag: String, props_val: &JsValue, children_val: &JsValue) -> Result<JsValue, JsValue> {
+    let props: HashMap<String, String> = props_val.into_serde().unwrap();
+    let children: Vec<Box<VeeDoom>> = children_val.into_serde().unwrap();
+
+    let key = match props.get("key") {
+        Some(k) => k.to_string(),
+        None => {
+            let start = SystemTime::now();
+            let ts = start
+                .duration_since(UNIX_EPOCH)
+                .expect("Time went backwards");
+            ts.as_nanos().to_string()
+        }
+    };
+
+    let node = Box::new(VeeDoom {
+        key,
+        tag,
+        props,
+        children,
+    });
+
+    Ok(JsValue::from_serde(&node).unwrap())
+}
+
+pub fn create_dom_node(node: &Box<VeeDoom>) -> Result<DocumentFragment, JsValue> {
+    let fragment = DocumentFragment::new()?;
+    let window = web_sys::window().expect("no global window exists");
+    let document = window.document().expect("should have a document on window");
+
+    let el = document.create_element(&*node.tag.as_str())?;
+    for (key, val) in &node.props {
+        el.set_attribute(key, val)?;
+    }
+
+    match node.props.get("text") {
+        Some(t) => {
+            let text = document.create_text_node(&t);
+            el.append_with_node_1(&text);
+        }
+        None => ()
+    }
+
+    if &node.children.len() > &0 {
+        let children: js_sys::Array = node
+            .children
+            .iter()
+            .map(|c| create_dom_node(c).unwrap())
+            .collect();
+
+        el.append_with_node(&children)?;
+    }
+
+    fragment.append_with_node_1(&el)?;
+    Ok(fragment)
+}
+
+#[wasm_bindgen]
+pub fn render(node_val: &JsValue, root_id: Option<String>) -> Result<(), JsValue> {
+    let node: Box<VeeDoom> = node_val.into_serde().unwrap();
+
+    let dom_node = match create_dom_node(&node) {
+        Ok(n) => n,
+        Err(_e) => return Err(JsValue::from_str("create dom node error"))
+    };
+
+    let window = web_sys::window().expect("no global window exists");
+    let document = window.document().expect("should have a document on window");
+
+    match root_id {
+        Some(id) => {
+            let root = match document.get_element_by_id(id.as_str()) {
+                Some(el) => el,
+                None => return Err(JsValue::from_str("undefined element")),
+            };
+            root.append_with_node_1(&dom_node)?;
+        }
+        None => return Ok(())
+    } 
+    Ok(())
+}
+
+// This is like the `main` function, except for JavaScript.
+#[wasm_bindgen(start)]
+pub fn main_js() -> Result<(), JsValue> {
+log("YOU HAVE ENTERED...
+ ██▒   █▓▓█████ ▓█████ ▓█████▄  ▒█████   ▒█████   ███▄ ▄███▓
+▓██░   █▒▓█   ▀ ▓█   ▀ ▒██▀ ██▌▒██▒  ██▒▒██▒  ██▒▓██▒▀█▀ ██▒
+ ▓██  █▒░▒███   ▒███   ░██   █▌▒██░  ██▒▒██░  ██▒▓██    ▓██░
+  ▒██ █░░▒▓█  ▄ ▒▓█  ▄ ░▓█▄   ▌▒██   ██░▒██   ██░▒██    ▒██ 
+   ▒▀█░  ░▒████▒░▒████▒░▒████▓ ░ ████▓▒░░ ████▓▒░▒██▒   ░██▒
+   ░ ▐░  ░░ ▒░ ░░░ ▒░ ░ ▒▒▓  ▒ ░ ▒░▒░▒░ ░ ▒░▒░▒░ ░ ▒░   ░  ░
+   ░ ░░   ░ ░  ░ ░ ░  ░ ░ ▒  ▒   ░ ▒ ▒░   ░ ▒ ▒░ ░  ░      ░
+     ░░     ░      ░    ░ ░  ░ ░ ░ ░ ▒  ░ ░ ░ ▒  ░      ░   
+      ░     ░  ░   ░  ░   ░        ░ ░      ░ ░         ░   
+     ░                  ░                                   
+");
+Ok(())
 }
