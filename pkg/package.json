@@ -1,0 +1,15 @@
+{
+  "name": "veedoom",
+  "collaborators": [
+    "anonymous <anonymous>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "veedoom_bg.wasm",
+    "veedoom.js",
+    "veedoom.d.ts"
+  ],
+  "module": "veedoom.js",
+  "types": "veedoom.d.ts",
+  "sideEffects": "false"
+}
