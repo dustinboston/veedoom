@@ -1,4 +1,4 @@
-# VeeDOOM WIP
+![VeeDoom](./logo.png)
 
 > A virtual DOM compiled to WebAssembly for max perf gains :muscle:. Implements the Myers diff algorithm for diffing children.
 
