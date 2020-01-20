@@ -1,11 +1,13 @@
 import init, { v, update } from './pkg/veedoom.js';
-import { render } from './dom.js';
+import { render, onChange } from './dom.js';
+
+window.veedoomOnChange = onChange;
 
 async function main() {
   await init('/pkg/veedoom_bg.wasm');
 
   let example = v("div", {
-    key: "foo",
+    // key: "foo",
     text: "Hello... ",
     style: "font-size: 20px"
   }, []);

@@ -13,17 +13,38 @@ crate-type = ["cdylib", "rlib"]
 name = "main"
 path = "src/main.rs"
 
+[features]
+default = ["console_error_panic_hook", "wee_alloc"]
+
+[profile.release]
+lto = true
+
 [dependencies]
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.1", optional = true }
+
 js-sys = "0.3"
 serde = "^1.0.59"
 serde_derive = "^1.0.59"
+
+# `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
+# compared to the default allocator's ~10K. It is slower than the default
+# allocator, however.
+#
+# Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
+wee_alloc = { version = "0.4.2", optional = true }
+
+wasm-bindgen-test = "0.3.8"
 
 [dependencies.wasm-bindgen]
 version = "^0.2"
 features = ["serde-serialize"]
 
-[dependencies.web-sys]
-version = "0.3.4"
+#[dependencies.web-sys]
+#version = "0.3.4"
 #features = [
 #  'CustomEvent',
 #  'CustomEventInit',
@@ -33,3 +54,4 @@ version = "0.3.4"
 #  'HtmlElement',
 #  'Window',
 #]
+

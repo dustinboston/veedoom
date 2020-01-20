@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate serde_derive;
 
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::collections::HashMap;
-use std::time::{SystemTime, UNIX_EPOCH};
 use wasm_bindgen::prelude::*;
 
 pub mod diff;
@@ -13,19 +13,32 @@ pub use myers::shortest_edit;
 pub use diff::{FieldChanged, ChangeType, Diff};
 pub use node::Node;
 
+// When the `wee_alloc` feature is enabled, make it the global allocator.
+#[cfg(feature = "wee_alloc")]
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
-}
 
-#[wasm_bindgen(module = "/dom.js")]
-extern "C" {
-    #[wasm_bindgen(js_name = onChange)]
+    // A consumer will need to provide the veedoomOnChange function in the
+    // global scope. This decouples DOM manipulations from WASM which enables
+    // tests to run with Node.
+    #[wasm_bindgen(js_name = veedoomOnChange)]
     fn on_change(diff: &JsValue);
 }
 
+// Generate ids with a simple counter, this avoids issues with using
+// system time to generate a unique number.
+fn get_id() -> usize {
+    static COUNTER:AtomicUsize = AtomicUsize::new(1);
+    COUNTER.fetch_add(1, Ordering::Relaxed)
+}
+
 // Provides a near JSX compatible interface for creating nodes
+// TODO: Handle the text nodes the way JSX does it, e.g. a string
 #[wasm_bindgen]
 pub fn v(tag: String, props_val: &JsValue, children_val: &JsValue) -> Result<JsValue, JsValue> {
     let props: HashMap<String, String> = props_val.into_serde().unwrap();
@@ -33,13 +46,7 @@ pub fn v(tag: String, props_val: &JsValue, children_val: &JsValue) -> Result<JsV
 
     let key = match props.get("key") {
         Some(k) => k.to_string(),
-        None => {
-            let start = SystemTime::now();
-            let ts = start
-                .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards");
-            ts.as_nanos().to_string()
-        }
+        None => format!("v{}", get_id().to_string())
     };
 
     let node = Box::new(Node {

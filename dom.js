@@ -6,6 +6,7 @@
 // TODO: debounce and batch updates to the same element
 
 export function onChange(diff) {
+  console.log('I watched a change', diff);
   switch (diff.field) {
     case 'Tag':
       return updateTag(diff);
@@ -24,7 +25,6 @@ function updateChildren(diff) {
       return insertChild(diff);
   }
 }
-
 
 function updateTag(diff) {
   const oldEl = document.getElementById(diff.key); 
@@ -83,9 +83,7 @@ export function createElement(node) {
     el.setAttribute(key, val);
   }
 
-  if (node.props.hasOwnProperty('key')) {
-    el.setAttribute('id', node.props.key);
-  }
+  el.setAttribute('id', node.key);
 
   if (node.props.hasOwnProperty('text')) {
     const text = document.createTextNode(node.props.text);

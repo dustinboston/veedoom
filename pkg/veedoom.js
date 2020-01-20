@@ -1,4 +1,3 @@
-import { onChange } from './snippets/veedoom-b5db89d6ec27d9cc/dom.js';
 
 let wasm;
 
@@ -177,8 +176,8 @@ function init(module) {
         getInt32Memory0()[arg0 / 4 + 1] = len0;
         getInt32Memory0()[arg0 / 4 + 0] = ptr0;
     };
-    imports.wbg.__wbg_onChange_dc25a9d0328bdba1 = function(arg0) {
-        onChange(getObject(arg0));
+    imports.wbg.__wbg_veedoomOnChange_dedd625b5fbc1139 = function(arg0) {
+        veedoomOnChange(getObject(arg0));
     };
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
         takeObject(arg0);
