@@ -24,13 +24,12 @@ features = ["serde-serialize"]
 
 [dependencies.web-sys]
 version = "0.3.4"
-features = [
-  'Document',
-  'DocumentFragment',
-  'Element',
-  'HtmlCollection',
-  'HtmlElement',
-  'Node',
-  'Text',
-  'Window',
-]
+#features = [
+#  'CustomEvent',
+#  'CustomEventInit',
+#  'Document',
+#  'Event',
+#  'EventTarget',
+#  'HtmlElement',
+#  'Window',
+#]

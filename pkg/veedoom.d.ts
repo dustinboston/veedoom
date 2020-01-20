@@ -6,12 +6,13 @@
 * @param {any} children_val 
 * @returns {any} 
 */
-export function create_element(tag: string, props_val: any, children_val: any): any;
+export function v(tag: string, props_val: any, children_val: any): any;
 /**
-* @param {any} node_val 
-* @param {string | undefined} root_id 
+* @param {any} current_val 
+* @param {any} other_val 
+* @returns {any} 
 */
-export function render(node_val: any, root_id?: string): void;
+export function update(current_val: any, other_val: any): any;
 /**
 */
 export function main_js(): void;

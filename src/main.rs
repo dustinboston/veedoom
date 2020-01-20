@@ -1,8 +1,23 @@
 use veedoom::*;
+use crate::myers::shortest_edit;
+
 pub fn main() {
     println!("nothing to see here, run some tests");
 
+    /*
+    let a: Vec<String> = vec!["b".to_string()];
+    let b: Vec<String> = vec!["a".to_string(), "b".to_string()];
+    let path = shortest_edit(&a, &b);
+    println!("test {:?}", path.len());
+    */
+
+    let x: Vec<String> = vec![];
+    let y: Vec<String> = vec!["B".to_string()];
+    let path2 = shortest_edit(&x, &y);
+    println!("test {:?}", path2.len());
+
     // CARE BEAR STARE!
+    /*
     let mut tree = n(
         "ul",
         vec![],
@@ -25,10 +40,23 @@ pub fn main() {
     children_change_ex.children.remove(4);
 
     tree.update(children_change_ex);
+    */
 }
 
 #[cfg(test)]
 mod tests {
+
+    use crate::myers::shortest_edit;
+
+    #[test]
+    fn should_detect_insertion() {
+        let a: Vec<String> = vec![];
+        let b: Vec<String> = vec!["b".to_string()];
+        let path = shortest_edit(&a, &b);
+        assert_eq!(path.len(), 1);
+    }
+
+    /*
     use veedoom::*;
 
     #[test]
@@ -103,4 +131,5 @@ mod tests {
         tree.update(deep_changes);
         assert_eq!(tree.children[0].children[0].tag, "span");
     }
+    */
 }

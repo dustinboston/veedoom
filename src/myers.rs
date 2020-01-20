@@ -17,7 +17,7 @@ pub fn shortest_edit(a: &Vec<String>, b: &Vec<String>) -> Vec<(isize, isize, isi
     let mut v = vec![0; z];
     let mut t: Vec<Vec<usize>> = vec![];
 
-    for d in 0..max {
+    for d in 0..=max {
         t.push(v.clone());
         let d = to_isize(d);
         for k in (-d..=d).step_by(2) {
