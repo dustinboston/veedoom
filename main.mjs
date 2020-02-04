@@ -48,17 +48,3 @@ async function main() {
 }
 main()
 
-// TODO: make demo interactive through a "console game", get it...
-window.lookAround = () => {
-  window.examinePane = () => {
-    window.runCommand = (command) => {
-      setTimeout(() => {
-        console.error('Your command resulted in a catastrophic failure which caused time to fold into itself. You are infinite. And yet, you still crave a good cup of coffee.');
-      }, 1000);
-      return `Executing command: '${command}'...`;
-    };
-    return 'As you peer through the pane you see a complex set of mirrors. Every movent you make appears to be refracted here and there until finally they are echoed back as the simple commands which conceived them. Your perspective has changed.';
-  };
-  return 'You see a window with several panes. One appears different than the rest, as though recently cleaned.'; 
-};
-
